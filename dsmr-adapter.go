@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -12,19 +14,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// func handler(w http.ResponseWriter, r *http.Request) {
-// 	log.Printf("Hoi %s", r.URL.Path[1:])
-// 	fmt.Fprintf(w, "Hi, I love %s!!", r.URL.Path[1:])
-// }
-
 // Device info
-// http://192.168.1.125/api/v1/dev/info
+// http://[ip]/api/v1/dev/info
 
 // Meter info
-// http://192.168.1.125/api/v1/sm/info
+// http://[ip]/api/v1/sm/info
 
 // Actual
-// http://192.168.1.125/api/v1/sm/actual
+// http://[ip]/api/v1/sm/actual
 
 var (
 	reg       = prometheus.NewRegistry()
@@ -53,9 +50,16 @@ var (
 		Name:      "gas_delivered",
 		Help:      "Gas delivered in m3",
 	})
+
+	baseUrl = os.Getenv("DSMR_BASE_URL")
 )
 
 func main() {
+	if baseUrl == "" {
+		fmt.Fprintf(os.Stderr, "DSMR_BASE_URL is empty")
+		os.Exit(1)
+	}
+
 	reg.MustRegister(voltage)
 	reg.MustRegister(power)
 	reg.MustRegister(energyTransported)
@@ -71,7 +75,7 @@ func main() {
 func handle(w http.ResponseWriter, req *http.Request) {
 	handler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
 
-	resp, err := http.Get("http://192.168.1.125/api/v1/sm/actual")
+	resp, err := http.Get(fmt.Sprintf("%s/api/v1/sm/actual", baseUrl))
 
 	if err != nil {
 		log.Fatal(err)
