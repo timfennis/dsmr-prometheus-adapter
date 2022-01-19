@@ -12,4 +12,6 @@ FROM scratch
 
 COPY --from=builder /dsmr-adapter /usr/bin/
 
+EXPOSE 8080
+
 CMD ["dsmr-adapter"]
