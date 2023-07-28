@@ -7,7 +7,3 @@ This project will run a webserver that serves statistics on it's /metrics endpoi
 ```shell
 docker build -t dsmr-adapter .
 ```
-
-## Disclaimer
-
-This is my first Go program ever it probably sucks.
